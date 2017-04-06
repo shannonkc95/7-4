@@ -1,4 +1,4 @@
-\documentclass[11pt]{report}
+\documentclass[12pt]{report}
 \usepackage[a4paper]{geometry}
 \usepackage{outline}
 \usepackage{pmgraph}
@@ -31,6 +31,8 @@
 \setcounter{tocdepth}{4}
 \usepackage{tocloft}
 \usepackage{blkarray}
+\usepackage{placeins}
+
 \makenomenclature
 \renewcommand{\nomname}{List of Symbols and Abbreviations}
 
@@ -92,7 +94,7 @@ quotations and paraphrases suitably indicated.}
 
 \nomenclature[B,01]{\textbf{H}}{Hyperlink Matrix}
 \nomenclature[B,02]{\textbf{S}}{Stochastic Matrix}
-\nomenclature[B,03]{$1^T$}{Rank 1 matrix with unit entries of size [1x\textit{n}]}
+\nomenclature[B,03]{$1^T$}{Rank 1 matrix with unit entries of size $[1 \times n]$}
 \nomenclature[B,04]{\textbf{a}}{Dangling node vector}
 \nomenclature[B,05]{\textbf{G}}{Google Matrix}
 \nomenclature[B,06]{$\alpha$}{Scaling parameter $\in$ [0,1]}
@@ -100,7 +102,7 @@ quotations and paraphrases suitably indicated.}
 
 \nomenclature[C,01]{N}{Neighbourhood graph}
 \nomenclature[C,02]{\textbf{L}}{Adjacency Matrix}
-\nomenclature[C,03]{\textbf{e}}{Rank 1 matrix with unit entries of size [1x\textit{n}]}
+\nomenclature[C,03]{\textbf{e}}{Rank 1 matrix with unit entries of size $[1 \times n]$}
 \nomenclature[C,04]{$\textbf{L}^T\textbf{L}$}{Authority Matrix}
 \nomenclature[C,05]{$\textbf{LL}^T$}{Hub Matrix}
 \nomenclature[C,06]{\textbf{x}}{Authority vector}
@@ -208,7 +210,7 @@ When Equation \eqref{eq:iterative} is applied to all pages in the graph, you can
 
 \section{Matrix Representation} \label{sec:matrix}
 \subsection{Hyperlink Matrix} \label{sec:hyperlink}
-If we represent the PageRank algorithm using matrices, we are able to compute a 1 x \textit{n} row vector, $\boldsymbol{\pi}^T$, the PageRank vector, at each iteration which contains the PageRank values for all web pages in the hyperlink graph. In order to do this we first introduce the concept of the Hyperlink matrix, a $[\textit{n}\times \textit{n}]$ matrix \textbf{H}, which is a row normalized matrix where 
+If we represent the PageRank algorithm using matrices, we are able to compute a $ [1 \times \textit{n}]$ row vector, $\boldsymbol{\pi}^T$, the PageRank vector, at each iteration which contains the PageRank values for all web pages in the hyperlink graph. In order to do this we first introduce the concept of the Hyperlink matrix, a $[\textit{n}\times \textit{n}]$ matrix \textbf{H}, which is a row normalized matrix where 
 \(\boldsymbol{H_{ij}} = \begin{cases} \frac{1}{\vert P_j \vert} & P_j\in B_{P_i } \\ 0 & \textnormal{otherwise} \end{cases}\). So for Figure \ref{fig:Example} we are able to produce 
 \[\textbf{H}=\left(
 \begin{array}{cccccccc}
@@ -261,7 +263,7 @@ The first modification, called the stochasticity adjustment, leads to the format
 \textbf{S} = \textbf{H} + \textbf{a}\left(\frac{1}{n}\cdot 1^{T}\right)
 \end{equation} 
 \myequations{Stochastic Matrix formula} 
-where \textbf{a} is the dangling node vector, \(\boldsymbol{a} = \begin{cases} 1 & \textnormal{if dangling node} \\ 0 & \textnormal{otherwise} \end{cases}\), and $1^T$ is the rank 1 matrix with unit entries of size [1x\textit{n}].
+where \textbf{a} is the dangling node vector, \(\boldsymbol{a} = \begin{cases} 1 & \textnormal{if dangling node} \\ 0 & \textnormal{otherwise} \end{cases}\), and $1^T$ is the rank 1 matrix with unit entries of size $[1\times n]$.
 
 In terms of the random surfer idea as mentioned in section 1.1, this means that if the surfer enters a dangling node, it is able to teleport to another page in the graph at random. For the 8-node graph example in Figure \ref{fig:Example}, we produce  
 \[\textbf{S}=\left(
@@ -775,14 +777,15 @@ A weakness of PR is that the web contains many documents that calculations must 
 
 HITS is insensitive to minor changes in its neighbourhood graph, N, PR can be sensitive depending on where the change occurred. If the change in the web graph occurred with pages that have a low PR value, then the overall PR is very small \cite{bonato}.
 
-Spamdexing is an intentional attempt to improve the ranking of a page on a SE, this can be done by link spam or by link farms, as shown in Figure \ref{fig:link farm}. PR is sensitive to in-degree and so a simple way to spamdex PR is to increase the in-degree to your page. \cite{bonato} As HITS and SALSA are less sensitive to spamdexing than PR. 
-
+Spamdexing is an intentional attempt to improve the ranking of a page on a SE, this can be done by link spam or by link farms, as shown in Figure \ref{fig:link farm}. 
 \begin{figure}[h!]
 \centering
 \includegraphics[width=5cm]{link_farm_baldi.png}
 \caption{A link farm, where the shanded nodes are all copied of the same page, taken from \cite{baldi2003modeling}}
 \label{fig:link farm}
 \end{figure}
+
+PR is sensitive to in-degree and so a simple way to spamdex PR is to increase the in-degree to your page. \cite{bonato} As HITS and SALSA are less sensitive to spamdexing than PR. 
 
 \begin{table}[H] \caption{Page rankings for Figure \ref{fig:Example} using PR, HITS and SALSA }
  \centering
@@ -1010,6 +1013,7 @@ In order to represent the road network in Durham, we first produce an axial map 
 \caption{Durham road network}
 \label{fig:durham map}
 \end{figure}
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=\linewidth]{axial_colour_label.png}
@@ -1022,8 +1026,44 @@ In order to represent the road network in Durham, we first produce an axial map 
 \caption{Durham road network represented by a hypergraph}
 \label{fig:durham graph}
 \end{figure}
+\FloatBarrier
+
 
 \subsubsection{Results and Analysis} \label{sec:results}
+\begin{table}[h!] \caption{Number of cars at each node}
+ \centering
+ \begin{tabular} {c c| c } 
+ Node & & Cars \\ [0.5ex] 
+ \hline
+ 1&A390&1\\
+ 2&North Rd&8\\
+ 3&Neville St&22\\
+ 4&Allergate&19\\
+ 5&Crossgate&24\\
+ 6&Margery Ln&11\\
+ 7&Grove St&23\\
+ 8&Quarryheads Ln&11\\
+ 9&Potters Bank&13\\
+ 10&Elvet Hill Rd&17\\
+ 11&South Rd&5\\
+ 12&Milburngate&25\\
+ 13&South St&25\\
+ 14&Silver St&2\\
+ 15&Claypath&9\\
+ 16&Saddler St&7\\
+ 17&Bailey&4\\
+ 18&Elvet Bridge&20\\
+ 19&New Elvet&5\\
+ 20&Old Elvet&9\\
+ 21&Court Ln&12\\
+ 22&Church St&10\\
+ 23&Stockton Rd&21\\
+ 24&Hallgarth St&16\\
+ 25&Whinney Hill&3\\
+ 
+ \end{tabular}
+ \label{Table:Durham cars}
+\end{table}
 \begin{table}[h] \caption{Comparison of PageRankings produced by standard algorithm and the WPR algorithm on Durham}
  \centering
  \begin{tabular} {c c| c c} 
@@ -1058,13 +1098,16 @@ In order to represent the road network in Durham, we first produce an axial map 
  \end{tabular}
  \label{Table:Durham comparison}
 \end{table}
+\FloatBarrier
 
 \subsubsection{Conclusion} \label{sec:Durham conc}
 
 %--------------------Conclusion
 \chapter{Conclusion} \label{chap:Conclusion}
 %--------------------Bibliography
+\newpage
 \addcontentsline{toc}{chapter}{Bibliography}
+
 \bibliographystyle{plain}
 \bibliography{bibliography.bib}
 %--------------------Appendices
