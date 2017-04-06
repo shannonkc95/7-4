@@ -30,6 +30,7 @@
 \setcounter{secnumdepth}{5}
 \setcounter{tocdepth}{4}
 \usepackage{tocloft}
+\usepackage{blkarray}
 \makenomenclature
 \renewcommand{\nomname}{List of Symbols and Abbreviations}
 
@@ -207,7 +208,7 @@ When Equation \eqref{eq:iterative} is applied to all pages in the graph, you can
 
 \section{Matrix Representation} \label{sec:matrix}
 \subsection{Hyperlink Matrix} \label{sec:hyperlink}
-If we represent the PageRank algorithm using matrices, we are able to compute a 1 x \textit{n} row vector, $\boldsymbol{\pi}^T$, the PageRank vector, at each iteration which contains the PageRank values for all web pages in the hyperlink graph. In order to do this we first introduce the concept of the Hyperlink matrix, a [\textit{n}x\textit{n}] matrix \textbf{H}, which is a row normalized matrix where 
+If we represent the PageRank algorithm using matrices, we are able to compute a 1 x \textit{n} row vector, $\boldsymbol{\pi}^T$, the PageRank vector, at each iteration which contains the PageRank values for all web pages in the hyperlink graph. In order to do this we first introduce the concept of the Hyperlink matrix, a $[\textit{n}\times \textit{n}]$ matrix \textbf{H}, which is a row normalized matrix where 
 \(\boldsymbol{H_{ij}} = \begin{cases} \frac{1}{\vert P_j \vert} & P_j\in B_{P_i } \\ 0 & \textnormal{otherwise} \end{cases}\). So for Figure \ref{fig:Example} we are able to produce 
 \[\textbf{H}=\left(
 \begin{array}{cccccccc}
@@ -365,45 +366,73 @@ The power method is useful for solving the PageRank equation as it converges to 
 \chapter{Other Methods of Ranking Web Pages}\label{chap:Other}
 
 
-Whilst PR is the most influential algorithm for ranking webpages, there are many other algorithms that are well known. In this chapter we will discuss two such algorithms, Section \ref{sec:HITS} will discuss the HITS algorithm which also ranks webpages by popularity \cite{kleinberg1999authoritative}. However HITS differs as it produces two scores for each webpage. HITS has been used in the search engine Ask.com \cite{bonato}, and expands upon the idea of using connectivity analysis too identify high quality pages within a topic specific graph \cite{manning}. We will also discuss the SALSA algorithm in Section \ref{sec:SALSA}, which incorporates ideas from both HITS and PR, as it assigns two scores to each web pages, but uses Markov theory as in PR \cite{lempel2000stochastic}. We will focus on the strengths and weaknesses of these two algorithms, and compare these methods of ranking webpages to PR in Section \ref{sec:compare}.
+Whilst PR is the most influential algorithm for ranking webpages, there are many other algorithms that are well known and in some cases preferable. In this chapter we will discuss two such algorithms, Section \ref{sec:HITS} will discuss the HITS algorithm which also ranks webpages by popularity \cite{kleinberg1999authoritative}, however it differs to PR by producing two scores for each webpage. HITS has been used in the search engine Ask.com \cite{bonato}, and expands upon the idea of using connectivity analysis to identify high quality pages within a topic specific graph \cite{manning}. We will also discuss the SALSA algorithm in Section \ref{sec:SALSA}, which incorporates ideas from both HITS and PR, as it assigns two scores to each web pages, but uses Markov theory as in PR \cite{lempel2000stochastic}. We will focus on the strengths and weaknesses of these two algorithms, and compare these algorithms to PR in Section \ref{sec:compare}.
 
 \section{HITS Algorithm} \label{sec:HITS}
-The Hypertext Induced Topic Search (HITS) algorithm was developed by Jon Kleinburg, and is similar to PR as it ranks web pages by popularity, however HITS produces two popularity scores, for each webpage.  Kleinburg developed this algorithm as a connectivity analysis on a hyperlinked environment. The HITS algorithm defines an authoritative page as a page with sources of information on a topic, while a hub is a page that is not in itself a source of information, but compilations to authoritative pages \cite{manning}. Authoritative pages have many inlinks, a hub is a page which has many outlinks, each webpage on a graph has some measure of an authority and some measure of a hub. A good authority is one which is pointed to by good hubs, whilst a good hub is one which points to good authorities. This cyclic definition is similar to the definition for PR, and we use an iterative computation in order to rank the webpages.
+The Hypertext Induced Topic Search (HITS) algorithm was developed by Jon Kleinburg, and is similar to PR as it ranks web pages by popularity, however HITS produces two popularity scores, for each webpage.  Kleinburg developed this algorithm as a connectivity analysis on the hyper linked environment of the web. The algorithm manages to distil a broad topic down to a representation of a very small size \cite{kleinberg1999authoritative}. The HITS algorithm defines an authoritative page as a page with sources of information on a topic, while a hub is a page that is not in itself a source of information, but compilations to authoritative pages \cite{manning}. Authoritative pages have many inlinks, whilst a hub has many outlinks, each webpage on a graph has some measure of an authority and some measure of a hub. A good authority is one which is pointed to by good hubs, whilst a good hub is one which points to good authorities. This cyclic definition is similar to the definition for PR, and we use an iterative computation in order to rank the webpages in the same manner.
 
-Authorities are pages with good coverage of a topic, hubs are pages with links to many useful pages on a topic \cite{bonato}. HITS was developed as a way to combat two problems that can occur when ranking webpages, these are the scarcity problem, where not many pages contain the exact information that you desire, and it can be difficult to identify these webpages. The second problem that can occur is the abundance problem, where the number of pages that are returned to the user as being relevant to the query is too much for the human user to digest. The algorithm distils a broad topic down to a representation of a very small size \cite{kleinberg1999authoritative}. The authority weight of a page is the sum of the hubness weights of its parents, backlins of a node, whilst the hubness weight of a page is the sum of the authority weights of its children, forward links from a node \cite{baldi2003modeling}.
+Authorities are pages with good coverage of a topic, hubs are pages with links to many useful pages on a topic \cite{bonato}. HITS was developed as a way to combat two problems that can occur when ranking webpages. One of these is the scarcity problem, where not many pages contain the exact information that you desire, and it can be difficult to identify the webpages that the user requires. The second problem that can occur is the abundance problem, where the number of pages that are returned to the user as being relevant to the query is too much for the human user to digest. 
+
+\textcolor{red}{ authority weight of a page is the sum of the hubness weights of its parents, backlinks of a node, whilst the hubness weight of a page is the sum of the authority weights of its children, forward links from a node \cite{baldi2003modeling}}.
 
 \subsection{HITS Implementation} \label{sec:HITS implementation}
-The HITS algorithm consists of two steps, the first step builds a neighbourhood graph, N, which is related to the query term, this step is known as the sampling step. The second step, the weight-propagation step, involves the computation of the authority and hub scores for each page, two ranked lists are then presented to the user. This computation is an iterative calculation, where firstly each page is assigned initial authority score $x_i^{(0)}$ and initial hub score $y_i^{(0)}$, which are redefined by computing \begin{equation} \label{eq:HITS1}
+The HITS algorithm consists of two steps, the first step involves building a neighbourhood graph, N, which is related to the query term, and is known as the sampling step. The second step, the weight-propagation step, involves the computation of the authority and hub scores for each page, two ranked lists are then presented to the user. This computation is an iterative calculation, where firstly each page is assigned an initial authority score $x_i^{(0)}$ and an initial hub score $y_i^{(0)}$, which are redefined by computing \begin{equation} \label{eq:HITS1}
 x_i^{(k)} = \displaystyle \sum_{j:e_{ij}\in E} y_j^{(k-1)} \quad\mathrm{and}\quad y_i^{(k)} = \displaystyle \sum_{j:e_{ij}\in E} x_j^{(k)}  \quad\mathrm{for}\quad k=1,2,3\ldots
 \end{equation} \myequations{HITS equations}
 
-In the sampling step, the algorithm first uses creates a root set of pages which contain the query, \textit{q}. Next a base set of pages is formed which includes the root set along with any pages which point into the root set, or which are pointed to, this usually resolves the issue of synonyms along with the issue that good authoritative pages may not contain the query item. This base set can become very large and so in practice a maximum number of inlinking and outlinking pages that are added for a particular node in the root set is fixed, for example at 100. 
+In the sampling step, the algorithm first creates a root set of pages which contain the query, \textit{q}. Next a base set of pages is formed which includes the root set along with any pages which point into the root set, or which are pointed to, as displayed by Figure \ref{fig:HITS expanding}. 
+\begin{figure}[h]
+\centering
+\includegraphics[width=5cm]{expanding_root.jpg}
+\caption{Expanding the root set into the base set, taken from \cite{pict}}
+\label{fig:HITS expanding}
+\end{figure}
+This expansion usually resolves the issue of synonyms along with the issue that good authoritative pages may not contain the query item. This base set can become very large and so in practice a maximum number of inlinking and outlinking pages that are added for a particular node in the root set is fixed, for example at 100. 
 
-The base set is constructed in this manner due to several considerations. Firstly a good authority page may not contain the query term  as there may be synonyms more commonly used, also if the root set contains a good hub set, this expansion means that the base set will then containing good authority pages that it may not have captured previously. The base set then forms the Neighbourhood Graph N, which is then used in the computation of the authority and hub scores for all pages in N.
+The base set is constructed in this manner for several reasons, firstly a good authority page may not contain the query term  as there may be synonyms more commonly used. If the root set contains a good hub set, this expansion means that the base set will then containing good authority pages that it may not have captured previously. The base set then forms the Neighbourhood Graph N, which is then used in the computation of the authority and hub scores for all pages in N.
 
-\begin{figure}[H]
+Figure \ref{fig:N build} shows how the N graph that is built through the HITS algorithm is smaller than the web graph, and so it is less computationally taxing on a system. 
+
+\begin{figure}[h] \label{fig:N build}
 \centering
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
-                    semithick]
+semithick]
 \tikzstyle{every state}=[fill=white,draw=black,text=black]
-\node[state] (1) [ultra thick] {$1$};
+\node[state] (1) {$1$};
 \node[state] (2) [right of=1] {$2$};
 \node[state] (3) [right of=2] {$3$};
-\node[state] (4) [below of=1] {$4$};
+\node[state] (4) [below of=2] {$4$};
+\node[state] (5) [below of=3] {$5$};
+\node[state] (6) [below of=4] {$6$};
+\path (1) edge node{} (2)
+          edge [bend left] node{} (3)
+          edge node{} (4)
+          edge node{} (6)
+      (2) edge node{} (4)
+      (3) edge node{} (2)
+          edge node{} (4)
+          edge node{} (5)
+      (4) edge node{} (5)
+      (6) edge node{} (5)
+          edge node{} (4);
+\end{tikzpicture} \qquad\qquad
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
+semithick]
+\tikzstyle{every state}=[fill=white,draw=black,text=black]
+\node[state] (1) {$1$};
+\node[state] (2) [ultra thick, right of=1] {$2$};
+\node[state] (3) [right of=2] {$3$};
+\node[state] (4) [below of=2] {$4$};
 \node[state] (5) [ultra thick, below of=3] {$5$};
 \node[state] (6) [below of=4] {$6$};
-\node[state] (8) [below of=5] {$8$};
 \path (1) edge node{} (2)
-          edge node{} (4)
-          edge [bend right] node{} (6)
-      (2) edge node{} (5)
-      (3) edge node{} (5)
+      (2) edge node{} (4)
+      (3) edge node{} (2)
+          edge node{} (5)
       (4) edge node{} (5)
-      (5) edge [bend right] node{} (8)
-      (8) edge [bend right] node{} (5);
-          
+      (6) edge node{} (5);
 \end{tikzpicture}
-\caption{Neighbourhood graph, N,  for {1,5}}
+\caption{Neighbourhood graph, N,  for {2,5}}
 \end{figure}
 
 The first step in the weight-propagation step is the formation of the adjacency matrix \textbf{L}, where \[\textbf{L}_{ij} = \begin{cases} 1, & \textnormal{if there exists an edge from node \textit{i} to node \textit{j}}\\ 0 & \textnormal{otherwise}
@@ -424,14 +453,13 @@ If we use the example in Figure \ref{fig:Example} as N, we are able to generate 
 \right)
 \end{equation*}
 
-We are able to represent Equations \eqref{eq:HITS1} as \begin{equation} \label{eq:HITSMatrix}
+We are able to represent Equations \eqref{eq:HITS1} in terms of this adjacency matrix as; \begin{equation} \label{eq:HITSMatrix}
 \textbf{x}^{(k)} = \textbf{L}^T\textbf{y}^{(k-1)}\quad\mathrm{and}\quad \textbf{y}^{(k)}=\textbf{Lx}^{(k)}
-\end{equation} where \(\textbf{x}^{(k)}\) and \(\textbf{y}^{(k)}\) are \(\textit{n}\) x1 vectors holding the approximate authority and hub scores at each iteration respectively. 
+\end{equation} where \(\textbf{x}^{(k)}\) and \(\textbf{y}^{(k)}\) are $[\textit{n}\times 1]$ vectors which hold the approximate authority and hub scores at each iteration respectively. In the HITS algorithm, we first initialise $\textbf{y}^{(0)}$ = \textbf{e}, where \textbf{e} is the column vector of all ones, and then apply Equations \eqref{eq:HITSMatrix} until convergence. 
 
-In the original algorithm, we first initialise $\textbf{y}^{(0)}$ = \textbf{e}, where \textbf{e} is the column vector of all ones, and then apply Equations \eqref{eq:HITSMatrix} until convergence.  We are able to simplify Equations \eqref{eq:HITSMatrix} to \begin{equation} \label{eq:HITSSimplify}
+We are able to further simplify Equations \eqref{eq:HITSMatrix} to \begin{equation} \label{eq:HITSSimplify}
 \textbf{x}^{(k)} = \textbf{L}^T\textbf{Lx}^{(k-1)}\quad\mathrm{and}\quad \textbf{y}^{(k)}=\textbf{LL}^T\textbf{y}^{(k-1)}
-\end{equation} \myequations{HITS equations simplified in terms of HITS matrices}
-This is the iterative power method on the matrices $\textbf{L}^T\textbf{L}$ and $\textbf{LL}^T$ respectively. The HITS algorithm defines the matrix $\textbf{L}^T\textbf{L}$ as the Authority matrix, and $\textbf{LL}^T$ as the Hub matrix, and so when we apply the power method to these matrices, we compute the authority vector \textbf{x}, which contains the authority scores for all pages in the base set, and the hub vector, \textbf{y}, which similarly contains the hub scores. 
+\end{equation} which is the iterative power method on the matrices $\textbf{L}^T\textbf{L}$ and $\textbf{LL}^T$ respectively. The HITS algorithm defines the matrix $\textbf{L}^T\textbf{L}$ as the Authority matrix, and $\textbf{LL}^T$ as the Hub matrix. So when we apply the power method to these matrices, we compute the authority vector \textbf{x}, which contains the authority scores for all pages in the base set, and the hub vector, \textbf{y}, which similarly contains the hub scores. 
 Using Figure \ref{fig:Example} again as an example, we are able to produce the following matrices;
 \begin{equation*}
 %\textnormal{Authority matrix} =
@@ -461,9 +489,9 @@ Using Figure \ref{fig:Example} again as an example, we are able to produce the f
 0 & 1 & 1 & 2 & 0 & 1 & 0 & 2 \\
 \end{array}
 \right)
-\end{equation*} We can note that these matrices are symmetric, positive semi-definite and nonnegative, also HITS with normalization will always converge, with as few as 5 iterations required in order to compute fairly accurate ranking lists \cite{manning}. 
+\end{equation*} Where we note that these matrices are symmetric, positive semi-definite and nonnegative, also HITS with normalization will always converge, with as few as 5 iterations required in order to compute fairly accurate ranking lists \cite{manning}. 
 
-Using the power method and the Equations \eqref{eq:HITSSimplify}, as described by the Matlab code given in Appendix \ref{app:code}, we are able to compute authority score \textbf{x}, and hub score, \textbf{y}, vectors;
+Using the power method, we are able to compute authority score \textbf{x}, and hub score, \textbf{y}, vectors, for this we use the Matlab code given in Appendix \ref{app:code};
 \begin{eqnarray}
 \textbf{x}^T = \left( \begin{array} {cccccccc}
 0 & 0.030 & 0.069 & 0.118 & 0.343 &0.030 &0.305 &0.106
@@ -492,13 +520,13 @@ Using the power method and the Equations \eqref{eq:HITSSimplify}, as described b
 \end{table}
 
 \section{SALSA method} \label{sec:SALSA}
-In 2000 Ronny Lempel and Schlomo Moran developed an algorithm for ranking webpages known as the Stochastic Approach to Link Systems Analysis, SALSA, which incorporates ideas from both HITS and PR. The algorithm was developed as an attempt to avoid certain problems with HITS, such as topic drift \cite{bonato}. The algorithm is similar to HITS as it produces both authority and hub scores for the webpages in the graph, but SALSA examines random walks on two Markov chains derived from the web, similar to PR. SALSA is a query-dependant algorithm like HITS. SALSA is less vulnerable to the TKC effect which can negatively impact rankings in HITS. The random walks that SALSA examines are derived from the link structure of the web as opposed to a graph which is formed from connectivity analysis as in HITS \cite{lempel2000stochastic}. The constructed graphs in SALSA gives higher authority weights than in HITS \cite{bonato}.
+In 2000, Ronny Lempel and Schlomo Moran developed an algorithm for ranking webpages called the Stochastic Approach to Link Systems Analysis, SALSA, which incorporates ideas from both HITS and PR. Lempel and Moran developed SALSA as an attempt to avoid certain problems with HITS, such as topic drift \cite{bonato}. The algorithm is similar to HITS as it produces both authority and hub scores for the webpages in the graph, but SALSA examines random walks on two Markov chains derived from the web, similar to PR. \textcolor{red}{SALSA is a query-dependant algorithm like HITS. SALSA is less vulnerable to the TKC effect which can negatively impact rankings in HITS.} The random walks that SALSA examines are derived from the link structure of the web as opposed to a graph which is formed from connectivity analysis as in HITS \cite{lempel2000stochastic}, and the constructed graphs in SALSA gives higher authority weights than in HITS \cite{bonato}.
 
 \subsection{SALSA Implementation}\label{sec:SALSA implementation}
-The SALSA algorithm method first forms a neighbourhood graph N in a similar method to HITS, see Section \ref{sec:HITS implementation} for more details. Next a bipartite undirected graph, G, is formed. G is defined by three sets, $V_h$, the set of hub nodes, $V_a$, the set of authority nodes, and \textit{E}, which is the set of directed edges in N. Using Figure \ref{fig:Example} as an example, we find 
+The SALSA algorithm first forms a neighbourhood graph N in a similar method to HITS, see Section \ref{sec:HITS implementation} for more details. Next a bipartite undirected graph, G, is formed, which is defined by three sets, $V_h$, the set of hub nodes, $V_a$, the set of authority nodes, and \textit{E}, which is the set of directed edges in N. Using Figure \ref{fig:Example} as an example, we find 
 \[V_h = \{2,3,4,5,6,7,8\} \]
 \[V_a = \{1,2,3,4,5,7,8\} \]
-Note a node can be in both $V_h$ and $V_a$. The bipartite graph for Figure \ref{fig:Example} is given in Figure \ref{fig:bipartite}, where the authority nodes are on the 'authority side' and similarly the hub nodes are on the 'hub side' of the graph. 
+The bipartite graph for Figure \ref{fig:Example} is given in Figure \ref{fig:bipartite}, where the authority nodes are on the 'authority side' and similarly the hub nodes are on the 'hub side' of the graph. 
 
 \begin{figure}[h!]
 \centering
@@ -520,9 +548,9 @@ Note a node can be in both $V_h$ and $V_a$. The bipartite graph for Figure \ref{
 \end{tikzpicture}\caption{Bipartite graph of Figure \ref{fig:Example} } \label{fig:bipartite}
 \end{figure}
 
-The next step in algorithm relates to the formation of the two Markov chains used, the authority Markov chain which has a transition probability matrix \textbf{A}, and a hub Markov chain which has the matrix \textbf{H}. In relation to the SALSA algorithm \textbf{H} is the hub matrix, which is not to be confused with the hyperlink matrix that \textbf{H} represents in PR, as shown in Section \ref{sec:hyperlink}.  
+The next step in the algorithm relates to the formation of the two Markov chains used, the authority Markov chain which has a transition probability matrix \textbf{A}, and a hub Markov chain which has the matrix \textbf{H}. In relation to the SALSA algorithm \textbf{H} is the hub matrix, which is not to be confused with the hyperlink matrix that \textbf{H} represents in PR, as shown in Section \ref{sec:hyperlink}.  
 
-SALSA uses row and column weighting to calculate their authority and hub scores. Let $\textbf{L}_r$ be the adjacency matrix \textbf{L} with each nonzero row divided by the sum of the rows, and similarly $\textbf{L}_c$ is \textbf{L} where each non zero column is divided by the column sum.
+\textcolor{red}{SALSA uses row and column weighting to calculate their authority and hub scores.} Let $\textbf{L}_r$ be the adjacency matrix \textbf{L} with each nonzero row divided by the sum of the rows, and similarly $\textbf{L}_c$ is \textbf{L} where each non zero column is divided by the column sum.
 
 \begin{equation*}
 \textbf{L}=\left(
@@ -567,37 +595,35 @@ SALSA uses row and column weighting to calculate their authority and hub scores.
 \right)
 \end{equation*}
 
-\textbf{H} is formed by removing the zero row and columns in $\textbf{L}_r\textbf{L}_c^T$, and similarly \textbf{A} is formed through removing the zero columns and rows in $\textbf{L}_c^T\textbf{L}_r$. 
-
 \begin{equation*}
 \textbf{L}_r\textbf{L}_c^T=\left(
 \begin{array}{cccccccc}
-\frac{5}{6} & 0 & 0 & 0 & 0 & \frac{1}{6} & 0 & 0 \\
-0 & \frac{5}{8} & \frac{1}{8} & \frac{1}{8} & 0 & 0 & 0 & \frac{1}{8} \\
-0 & \frac{1}{4} & \frac{1}{4} & \frac{1}{4} & 0 & 0 & 0 & \frac{1}{4} \\
-0 & \frac{1}{8} & \frac{1}{8} & \frac{7}{24} & 0 & \frac{1}{6} & 0 & \frac{7}{24} \\
-0 & 0 & 0 & 0 & \frac{1}{2} & \frac{1}{2} & 0 & 0\\
-\frac{1}{6} & 0 & 0 & \frac{1}{9} & \frac{1}{6} & \frac{4}{9} & 0 & \frac{1}{9} \\
-0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
-0 & \frac{1}{8} & \frac{1}{8} & \frac{7}{24} & 0 & \frac{1}{6} & 0 & \frac{7}{24} \\
+\frac{5}{6} & 0 & 0 & 0 & 0 & \frac{1}{6} & \textcolor{red}{0} & 0 \\
+0 & \frac{5}{8} & \frac{1}{8} & \frac{1}{8} & 0 & 0 & \textcolor{red}{0} & \frac{1}{8} \\
+0 & \frac{1}{4} & \frac{1}{4} & \frac{1}{4} & 0 & 0 & \textcolor{red}{0} & \frac{1}{4} \\
+0 & \frac{1}{8} & \frac{1}{8} & \frac{7}{24} & 0 & \frac{1}{6} & \textcolor{red}{0} & \frac{7}{24} \\
+0 & 0 & 0 & 0 & \frac{1}{2} & \frac{1}{2} & \textcolor{red}{0} & 0\\
+\frac{1}{6} & 0 & 0 & \frac{1}{9} & \frac{1}{6} & \frac{4}{9} & \textcolor{red}{0} & \frac{1}{9} \\
+\textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} \\
+0 & \frac{1}{8} & \frac{1}{8} & \frac{7}{24} & 0 & \frac{1}{6} & \textcolor{red}{0} & \frac{7}{24} \\
 \end{array}
 \right)
 \mathrm{,}\quad\mathrm{and}\quad
 \textbf{L}_c^T\textbf{L}_r=\left(
 \begin{array}{cccccccc}
-0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
-0 & \frac{1}{3} & 0 & \frac{1}{3} & 0 & \frac{1}{3} & 0 & 0 \\
-0 & 0 & \frac{1}{2} & 0 & \frac{1}{2} & 0 & 0 & 0 \\
-0 & \frac{1}{6} & 0 & \frac{1}{3} & 0 & \frac{1}{6} & \frac{1}{6} & \frac{1}{6} \\
-0 & 0 & \frac{1}{8} & 0 & \frac{5}{8} & 0 & \frac{1}{4} & 0 \\
-0 & \frac{1}{3} & 0 & \frac{1}{3} & 0 & \frac{1}{3} & 0 & 0 \\
-0 & 0 & 0 & \frac{1}{9} & \frac{1}{3} & 0 & \frac{4}{9} & \frac{1}{9} \\
-0 & 0 & 0 & \frac{1}{6} & 0 & 0 & \frac{1}{6} & \frac{2}{3} \\
+\textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{0} \\
+\textcolor{red}{0} & \frac{1}{3} & 0 & \frac{1}{3} & 0 & \frac{1}{3} & 0 & 0 \\
+\textcolor{red}{0} & 0 & \frac{1}{2} & 0 & \frac{1}{2} & 0 & 0 & 0 \\
+\textcolor{red}{0} & \frac{1}{6} & 0 & \frac{1}{3} & 0 & \frac{1}{6} & \frac{1}{6} & \frac{1}{6} \\
+\textcolor{red}{0} & 0 & \frac{1}{8} & 0 & \frac{5}{8} & 0 & \frac{1}{4} & 0 \\
+\textcolor{red}{0} & \frac{1}{3} & 0 & \frac{1}{3} & 0 & \frac{1}{3} & 0 & 0 \\
+\textcolor{red}{0} & 0 & 0 & \frac{1}{9} & \frac{1}{3} & 0 & \frac{4}{9} & \frac{1}{9} \\
+\textcolor{red}{0} & 0 & 0 & \frac{1}{6} & 0 & 0 & \frac{1}{6} & \frac{2}{3} \\
 \end{array}
 \right)
 \end{equation*}
-Hence we are able to form the SALSA hub and authority matrices for the example;
-\begin{equation}
+\textbf{H} is formed by removing the zero row and columns in $\textbf{L}_r\textbf{L}_c^T$, and similarly \textbf{A} is formed through removing the zero columns and rows in $\textbf{L}_c^T\textbf{L}_r$. Hence we are able to form the SALSA hub and authority matrices for the example;
+\begin{equation*}
 \textbf{H}=\left(
 \begin{array}{ccccccc}
 \frac{5}{6} & 0 & 0 & 0 & 0 & \frac{1}{6} & 0 \\
@@ -621,39 +647,65 @@ Hence we are able to form the SALSA hub and authority matrices for the example;
 0 & 0 & \frac{1}{6} & 0 & 0 & \frac{1}{6} & \frac{2}{3} \\
 \end{array}
 \right)
-\end{equation}
+\end{equation*}
 
-Both the authority and the hub matrix are primitive, as the Markov chains for both are aperiodic \cite{lempel2000stochastic}. 
-
-If G is connected, then \textbf{H} and \textbf{A} are both irreducible Markov chains, and we are able to find the stationary vector, $\boldsymbol\pi_h^T$, of \textbf{H} which gives the hub scores for N. Equivalently $\boldsymbol\pi_a^T$, the stationary vector of \textbf{A} gives the authority scores.  
-
+Both the authority and the hub matrix are primitive, as the Markov chains for both are aperiodic \cite{lempel2000stochastic}. If G is connected, then \textbf{H} and \textbf{A} are both irreducible Markov chains, and we are able to find the stationary vector, $\boldsymbol\pi_h^T$, of \textbf{H} which gives the hub scores for N. Equivalently $\boldsymbol\pi_a^T$, the stationary vector of \textbf{A} gives the authority scores.
 By the ergodic theorem \cite{gallager1992discrete}, we can find the  the stationary distribution of the underlying Markov chain, as this is the principal eigenvector of an irreducible, aperiodic, stochastic matrix. The entries with the highest entries relate the the nodes that are most frequently visited by the (infinite) random walk. 
 
 In our example, G in Figure \ref{fig:bipartite} is not connected, as we are not able to reach nodes 7a and 1h though any of the other nodes. Due to this, our \textbf{H} and \textbf{A} matrices contain multiple connected graphs. \textbf{H} contains two connected sets, \textit{X} = \{7\}, and \textit{Y}=\{1,2,3,4,5,6,8\}, \textbf{A} also contains two sets, \textit{W}=\{1\} and \textit{Z}=\{2,3,4,5,6,7,8\}, we are able to compute the stationary values for these connected sets through the use of the power method, as discussed in Section \ref{sec:solve}.
 
 The stationary vectors, $\boldsymbol\pi_h^T$, for the two Markov chains which make up the Hub Markov chain is \textit{X} and \textit{Y} are 
-\[\boldsymbol\pi_h^T (X) = (1)\mathrm{,}\quad\mathrm{and}\quad
+\[\boldsymbol\pi_h^T (X) = \begin{blockarray}{c}
+7 \\
+\begin{block}{(c)}
+ 1 \\
+\end{block}
+\end{blockarray} \mathrm{,}\quad\mathrm{and}\quad
 \boldsymbol\pi_h^T (Y) =
-\left( \begin{array} {ccccccc}
-0.214 & 0.143 & 0.071 & 0.143 & 0.071 & 0.214 & 0.143 
-\end{array}\right)\] correspondingly the stationary values for the two components in \textbf{A} are
-\[\boldsymbol\pi_a^T (W) = (1)\mathrm{,}\quad\mathrm{and}\quad
-\boldsymbol\pi_a^T (Z) =
-\left( \begin{array} {ccccccc}
-0.071 & 0.071 & 0.143 & 0.286 & 0.071 & 0.214 & 0.143 
-\end{array}\right)\]
-
-From these components we are able to calculatate the local Hub and Authority scores:
-\[\boldsymbol\pi_h^T (X) = (1)\mathrm{,}\quad\mathrm{and}\quad
+\begin{blockarray}{ccccccc}
+1 & 2 & 3 & 4 & 5 & 6 & 8 \\
+\begin{block}{(ccccccc)}
+ 0.214 & 0.143 & 0.071 & 0.143 & 0.071 & 0.214 & 0.143 \\
+\end{block}
+\end{blockarray} \] correspondingly the stationary values for the two components in \textbf{A} are
+\[\boldsymbol\pi_a^T (W) = \begin{blockarray}{c}
+1 \\
+\begin{block}{(c)}
+ 1 \\
+\end{block}
+\end{blockarray} \mathrm{,}\quad\mathrm{and}\quad
+\boldsymbol\pi_a^T (Z) = \begin{blockarray}{ccccccc}
+2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\begin{block}{(ccccccc)}
+0.071 & 0.071 & 0.143 & 0.286 & 0.071 & 0.214 & 0.143 \\
+\end{block}
+\end{blockarray}\]
+From these components we are able to calculate the local Hub and Authority rankings:
+\[\boldsymbol\pi_h^T (X) = \begin{blockarray}{c}
+7 \\
+\begin{block}{(c)}
+ 1 \\
+\end{block}
+\end{blockarray} \mathrm{,}\quad\mathrm{and}\quad
 \boldsymbol\pi_h^T (Y) =
-\left( \begin{array} {ccccccc}
-1 & 3 & 6 & 3 & 6 & 1 & 3 
-\end{array}\right)\]correspondingly the stationary values for the two components in \textbf{A} are
-\[\boldsymbol\pi_h^T (W) = (1)\mathrm{,}\quad\mathrm{and}\quad
-\boldsymbol\pi_h^T (Z) =
-\left( \begin{array} {ccccccc}
-5 & 5 & 3 & 1 & 5 & 2 & 3 
-\end{array}\right)\]
+\begin{blockarray}{ccccccc}
+1 & 2 & 3 & 4 & 5 & 6 & 8 \\
+\begin{block}{(ccccccc)}
+1 & 3 & 6 & 3 & 6 & 1 & 3 \\
+\end{block}
+\end{blockarray} \]
+\[\boldsymbol\pi_h^T (W) = \begin{blockarray}{c}
+1 \\
+\begin{block}{(c)}
+ 1 \\
+\end{block}
+\end{blockarray} \mathrm{,}\quad\mathrm{and}\quad
+\boldsymbol\pi_h^T (Z) = \begin{blockarray}{ccccccc}
+2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\begin{block}{(ccccccc)}
+5 & 5 & 3 & 1 & 5 & 2 & 3  \\
+\end{block}
+\end{blockarray} \]
 
 We are now able to calculate the global Hub and Authority scores, this is done by weighting the local scores by the proportion of G that they contain, for example \textit{X} contains $\frac{1}{8}$ of the nodes in the hub set, and so SALSA proposes that the $\boldsymbol\pi_h^T(X)$ vector should be weighted by $\frac{1}{8}$. This leads to the global scores;
 \begin{eqnarray*}
@@ -663,9 +715,9 @@ We are now able to calculate the global Hub and Authority scores, this is done b
 \pi_a = \left( \begin{array} {cccccccc}
 0.125 & 0.063 & 0.063 & 0.125 & 0.250 & 0.063 & 0.188 & 0.125
 \end{array}\right)
-\end{eqnarray*}
+\end{eqnarray*} as shown in Table \ref{Table:SALSA}
 
-\begin{table}[h] \caption{SALSA Authority and Hub rankings}
+\begin{table}[H] \caption{SALSA Authority and Hub rankings}
  \centering
  \begin{tabular} {c| c c} 
  Node & Authority & Hub \\ [0.5ex] 
@@ -681,7 +733,6 @@ We are now able to calculate the global Hub and Authority scores, this is done b
  \end{tabular}
  \label{Table:SALSA}
 \end{table}
-
 
 
 \section{Comparing PageRank, HITS and SALSA} \label{sec:compare}
@@ -796,9 +847,7 @@ When Equation \eqref{eq:weightin} and Equation \eqref{eq:weightout} applied to F
 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0\\
 \end{array}
-\right)	\]
-
-\[\textbf{W}_{in}=\left(
+\right) \mathrm{,}\quad\mathrm{and}\quad\textbf{W}_{in}=\left(
 \begin{array}{cccccccc}
 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
@@ -895,7 +944,7 @@ TSPR suggests that the web page can be represented sufficiently by 16 main topic
 \item Society
 \item Sports
 \item World
-\end{enumerate} During the offline crawl, 16 TSPR vectors are created from information supplied by the user. This information can be created automatically from an analysis of the bookmarks and browser history over time, or the user could manually input their preference for each topic, the algorithm assumes that an individuals interest can be approxmiated sufficiently as a linear combination of the smaller topic page distributions \cite{manning}.
+\end{enumerate} During the offline crawl, 16 TSPR vectors are created from information supplied by the user. This information can be created automatically from an analysis of the bookmarks and browser history over time, or the user could manually input their preference for each topic, the algorithm assumes that an individuals interest can be approximated sufficiently as a linear combination of the smaller topic page distributions \cite{manning}.
 \begin{figure}[h!]
 \centering
 \includegraphics[width=10cm]{Topic-specific_PageRank_Manning.png}
